@@ -4,11 +4,8 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,7 +15,6 @@ public class MainActivity extends AppCompatActivity {
     View underlyingFilterHeader;
     NestedScrollView scrollView;
 
-    boolean pending = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,32 +32,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
                 if (filterHeader.getTop() - scrollY <= 0)
-                    add();
-                else remove();
+                    show();
+                else hide();
             }
         });
     }
 
-    private void remove() {
-        if (pending)
-            return;
-
+    //滑动过程中进行add remove 操作会使得dispatchDraw 方法产生异常 mPrivateFlags，故使用隐藏的方式
+    private void hide() {
         ViewGroup parent = (ViewGroup) underlyingFilterHeader.getParent();
         if (parent == null)
             return;
-        pending = true;
-        frameLayout.removeView(underlyingFilterHeader);
-        pending = false;
+        underlyingFilterHeader.setVisibility(View.GONE);
     }
 
-    private void add() {
-        if (pending)
-            return;
+    private void show() {
         ViewGroup parent = (ViewGroup) underlyingFilterHeader.getParent();
         if (parent != null)
-            return;
-        pending = true;
-        frameLayout.addView(underlyingFilterHeader);
-        pending = false;
+            underlyingFilterHeader.setVisibility(View.VISIBLE);
+        else frameLayout.addView(underlyingFilterHeader);
     }
 }
